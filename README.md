@@ -82,8 +82,8 @@ Antes de começar, você precisará ter instalado:
 ### Clone o repositório
 
 ```bash
-git clone <url-do-repositorio>
-cd desafio
+git clone https://github.com/marcelloJr/access-control-api.git
+cd access-control-api
 ```
 
 ### Configure as variáveis de ambiente
