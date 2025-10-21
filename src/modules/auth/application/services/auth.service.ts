@@ -4,23 +4,29 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/modules/users/application/services/users.service';
 import { LoginDto } from '../dtos/login.dto';
 import { AuthResponseDto } from '../dtos/auth-response.dto';
+import { LogsService } from '@/modules/access-logs/application/services/logs.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly logsService: LogsService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(loginDto: LoginDto, ip: string): Promise<AuthResponseDto> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
+
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
+
     const payload = { sub: user._id.toString(), email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
+    await this.logsService.createAccessLog(user._id.toString(), ip);
     const expiresIn = this.getTokenExpirationTime();
+
     return new AuthResponseDto(accessToken, expiresIn);
   }
 
