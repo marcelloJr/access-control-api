@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { UsersService } from '@/modules/users/application/services/users.service';
 import { CreateUserDto } from '@/modules/users/application/dtos/create-user.dto';
 import { UserResponseDto } from '@/modules/users/application/dtos/user-response.dto';
+import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
+import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
+import { UserRole } from '@/modules/users/domain/entities/user.entity';
 
 @ApiTags('users')
 @Controller('users')
@@ -24,6 +28,8 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Listar todos os usuários (apenas admin)' })
   @ApiResponse({
