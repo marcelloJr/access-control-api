@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { User } from '@/modules/users/domain/entities/user.entity';
 import { IUsersRepository } from '@/modules/users/domain/repositories/users.repository.interface';
+import { SearchFilterDto } from '@/modules/shared/dtos/search-filter.dto';
 
 @Injectable()
 export class UsersRepository implements IUsersRepository {
@@ -15,6 +16,27 @@ export class UsersRepository implements IUsersRepository {
 
   async findAll(): Promise<User[]> {
     return this.userModel.find().select('-password').exec();
+  }
+
+  async findAllPaginated(filterDto: SearchFilterDto): Promise<{ users: User[]; total: number }> {
+    const { page = 1, limit = 10, search } = filterDto;
+    const skip = (page - 1) * limit;
+
+    const filter: FilterQuery<User> = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      this.userModel.find(filter).select('-password').skip(skip).limit(limit).exec(),
+      this.userModel.countDocuments(filter).exec(),
+    ]);
+
+    return { users, total };
   }
 
   async findById(id: string): Promise<User | null> {

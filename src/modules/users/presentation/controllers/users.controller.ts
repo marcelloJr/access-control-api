@@ -1,8 +1,19 @@
-import { Controller, Get, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { UsersService } from '@/modules/users/application/services/users.service';
 import { CreateUserDto } from '@/modules/users/application/dtos/create-user.dto';
 import { UserResponseDto } from '@/modules/users/application/dtos/user-response.dto';
+import { SearchFilterDto } from '@/modules/shared/dtos/search-filter.dto';
+import { PaginatedResponseDto } from '@/modules/shared/dtos/pagination.dto';
 import { JwtAuthGuard } from '@/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/infrastructure/guards/roles.guard';
 import { Roles } from '@/modules/auth/infrastructure/decorators/roles.decorator';
@@ -31,15 +42,17 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Listar todos os usuários (apenas admin)' })
+  @ApiOperation({ summary: 'Listar usuários com paginação e filtros (apenas admin)' })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuários',
-    type: [UserResponseDto],
+    description: 'Lista paginada de usuários',
+    type: PaginatedResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 403, description: 'Acesso negado - apenas admin' })
-  async findAll(): Promise<UserResponseDto[]> {
-    return this.usersService.findAll();
+  async findAll(
+    @Query() filterDto: SearchFilterDto,
+  ): Promise<PaginatedResponseDto<UserResponseDto>> {
+    return this.usersService.findAllPaginated(filterDto);
   }
 }
