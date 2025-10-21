@@ -6,7 +6,7 @@ import { UsersService } from '@/modules/users/application/services/users.service
 import { LogsService } from '@/modules/access-logs/application/services/logs.service';
 import * as bcrypt from 'bcrypt';
 
-describe('AuthService - TDD', () => {
+describe('AuthService', () => {
   let authService: AuthService;
   let jwtService: JwtService;
   let logsService: LogsService;
@@ -48,8 +48,8 @@ describe('AuthService - TDD', () => {
     jest.clearAllMocks();
   });
 
-  describe('Geração de JWT', () => {
-    it('deve gerar um token JWT válido após login bem-sucedido', async () => {
+  describe('JWT Generation', () => {
+    it('should generate a valid JWT token after successful login', async () => {
       const loginDto = { email: 'test@example.com', password: 'password123' };
       const ip = '192.168.1.1';
       const expectedToken = 'valid.jwt.token';
@@ -71,7 +71,7 @@ describe('AuthService - TDD', () => {
       });
     });
 
-    it('deve incluir as informações corretas no payload do JWT', async () => {
+    it('should include the correct information in the JWT payload', async () => {
       const loginDto = { email: 'test@example.com', password: 'password123' };
       const ip = '192.168.1.1';
 
@@ -90,8 +90,8 @@ describe('AuthService - TDD', () => {
     });
   });
 
-  describe('Validação de JWT', () => {
-    it('deve validar credenciais corretas', async () => {
+  describe('JWT Validation', () => {
+    it('should validate correct credentials', async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
 
@@ -100,7 +100,7 @@ describe('AuthService - TDD', () => {
       expect(result.email).toBe(mockUser.email);
     });
 
-    it('deve retornar null para credenciais inválidas', async () => {
+    it('should return null for invalid credentials', async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
 
@@ -110,8 +110,8 @@ describe('AuthService - TDD', () => {
     });
   });
 
-  describe('Autenticação com senha incorreta', () => {
-    it('deve lançar UnauthorizedException quando a senha está incorreta', async () => {
+  describe('Authentication with wrong password', () => {
+    it('should throw UnauthorizedException when password is incorrect', async () => {
       const loginDto = { email: 'test@example.com', password: 'wrongpassword' };
       const ip = '192.168.1.1';
 
@@ -122,16 +122,16 @@ describe('AuthService - TDD', () => {
       await expect(authService.login(loginDto, ip)).rejects.toThrow('Credenciais inválidas');
     });
 
-    it('deve lançar UnauthorizedException quando o usuário não existe', async () => {
+    it('should throw UnauthorizedException when user does not exist', async () => {
       const loginDto = { email: 'notfound@example.com', password: 'password123' };
       const ip = '192.168.1.1';
 
-      mockUsersService.findByEmail.mockRejectedValue(new Error('Usuário não encontrado'));
+      mockUsersService.findByEmail.mockRejectedValue(new Error('User not found'));
 
       await expect(authService.login(loginDto, ip)).rejects.toThrow(UnauthorizedException);
     });
 
-    it('não deve gerar token quando a autenticação falha', async () => {
+    it('should not generate token when authentication fails', async () => {
       const loginDto = { email: 'test@example.com', password: 'wrongpassword' };
       const ip = '192.168.1.1';
 
@@ -142,7 +142,7 @@ describe('AuthService - TDD', () => {
       expect(jwtService.sign).not.toHaveBeenCalled();
     });
 
-    it('não deve criar log de acesso quando a autenticação falha', async () => {
+    it('should not create access log when authentication fails', async () => {
       const loginDto = { email: 'test@example.com', password: 'wrongpassword' };
       const ip = '192.168.1.1';
 
@@ -154,8 +154,8 @@ describe('AuthService - TDD', () => {
     });
   });
 
-  describe('Registro de log de acesso', () => {
-    it('deve registrar log de acesso após login bem-sucedido', async () => {
+  describe('Access Log Registration', () => {
+    it('should register access log after successful login', async () => {
       const loginDto = { email: 'test@example.com', password: 'password123' };
       const ip = '192.168.1.1';
 
@@ -171,8 +171,8 @@ describe('AuthService - TDD', () => {
     });
   });
 
-  describe('Tempo de expiração do token', () => {
-    it('deve retornar o tempo de expiração correto para 1 dia', async () => {
+  describe('Token Expiration Time', () => {
+    it('should return the correct expiration time for 1 day', async () => {
       const loginDto = { email: 'test@example.com', password: 'password123' };
       const ip = '192.168.1.1';
 

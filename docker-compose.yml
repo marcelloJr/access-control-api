@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: access-control-api
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/access-control
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    container_name: access-control-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: access-control
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - '27017:27017'
+
+volumes:
+  mongo_data:
